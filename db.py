@@ -4,7 +4,9 @@ from datetime import datetime, date, timedelta
 import hashlib
 import secrets
 
-DB_PATH = Path(__file__).with_name("ecogo.db")
+import shutil
+
+DB_PATH = Path(__file__).with_name("wastedash.db")
 
 def get_connection():
     con = sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -12,6 +14,13 @@ def get_connection():
     return con
 
 def init_db():
+    legacy_db = Path(__file__).with_name("ecogo.db")
+    if not DB_PATH.exists() and legacy_db.exists():
+        try:
+            shutil.copyfile(legacy_db, DB_PATH)
+        except Exception:
+            pass
+
     with get_connection() as con:
         # Create users table
         con.execute("""CREATE TABLE IF NOT EXISTS users (
@@ -67,6 +76,9 @@ def init_db():
         if "updated_at" not in booking_cols:
             con.execute("ALTER TABLE bookings ADD COLUMN updated_at TEXT")
 
+        # Migrate any legacy ecogo.in accounts to wastedash.in if present
+        con.execute("UPDATE users SET contact = REPLACE(contact, '@ecogo.in', '@wastedash.in') WHERE contact LIKE '%@ecogo.in'")
+
         # Seed realistic demo data if database is empty so reviewer can test immediately
         cur.execute("SELECT COUNT(*) FROM users")
         if cur.fetchone()[0] == 0:
@@ -80,7 +92,13 @@ def hash_password(pw, salt=None):
 def verify_password(pw, saved):
     try:
         salt, digest = saved.split("$", 1)
-        return secrets.compare_digest(hash_password(pw, salt).split("$", 1)[1], digest)
+        # Also check if user entered either wastedash123 or ecogo123 for demo accounts
+        matches = secrets.compare_digest(hash_password(pw, salt).split("$", 1)[1], digest)
+        if not matches and pw in ("wastedash123", "ecogo123"):
+            for alt in ("wastedash123", "ecogo123"):
+                if secrets.compare_digest(hash_password(alt, salt).split("$", 1)[1], digest):
+                    return True
+        return matches
     except Exception:
         return False
 
@@ -93,14 +111,14 @@ def seed_demo_data(con):
     # 1. Customer user
     con.execute("""INSERT INTO users(name, contact, password_hash, role, worker_enabled, online_status, created_at)
         VALUES(?, ?, ?, ?, ?, ?, ?)""",
-        ("Rahul Sharma", "rahul@ecogo.in", hash_password("ecogo123"), "customer", 0, 1, now_str)
+        ("Rahul Sharma", "rahul@wastedash.in", hash_password("wastedash123"), "customer", 0, 1, now_str)
     )
     cust_id = con.execute("SELECT last_insert_rowid()").fetchone()[0]
 
     # 2. Collector user
     con.execute("""INSERT INTO users(name, contact, password_hash, role, worker_enabled, online_status, created_at)
         VALUES(?, ?, ?, ?, ?, ?, ?)""",
-        ("Priya Patel", "priya@ecogo.in", hash_password("ecogo123"), "collector", 1, 1, now_str)
+        ("Priya Patel", "priya@wastedash.in", hash_password("wastedash123"), "collector", 1, 1, now_str)
     )
     collector_id = con.execute("SELECT last_insert_rowid()").fetchone()[0]
 
@@ -130,8 +148,16 @@ def seed_demo_data(con):
 def get_user_by_contact(contact):
     if not contact:
         return None
+    target = contact.strip().lower()
     with get_connection() as con:
-        return con.execute("SELECT * FROM users WHERE LOWER(contact)=?", (contact.strip().lower(),)).fetchone()
+        user = con.execute("SELECT * FROM users WHERE LOWER(contact)=?", (target,)).fetchone()
+        if not user and "@wastedash.in" in target:
+            legacy = target.replace("@wastedash.in", "@ecogo.in")
+            user = con.execute("SELECT * FROM users WHERE LOWER(contact)=?", (legacy,)).fetchone()
+        elif not user and "@ecogo.in" in target:
+            modern = target.replace("@ecogo.in", "@wastedash.in")
+            user = con.execute("SELECT * FROM users WHERE LOWER(contact)=?", (modern,)).fetchone()
+        return user
 
 def get_user_by_id(uid):
     if not uid:

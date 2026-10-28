@@ -8,7 +8,7 @@ import db
 # App Configuration & Theme Initialization
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="EcoGo — Waste, sorted. World, better.",
+    page_title="WasteDash — Waste, sorted. World, better.",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -73,7 +73,7 @@ def render_navbar():
         <div style="display: flex; align-items: center; gap: 12px; padding: 2px 0;">
             {styles.SVG_LOGO.strip()}
             <div>
-                <div style="font-family: 'Outfit', sans-serif; font-size: 1.55rem; font-weight: 800; line-height: 1.1; color: #1B4332;">EcoGo</div>
+                <div style="font-family: 'Outfit', sans-serif; font-size: 1.55rem; font-weight: 800; line-height: 1.1; color: #1B4332;">WasteDash</div>
                 <div style="font-size: 0.72rem; color: #52796F; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">Waste, sorted. World, better.</div>
             </div>
         </div>
@@ -159,7 +159,7 @@ def render_landing_page():
                 if user is None:
                     st.session_state.auth_mode = "signup"
                     st.session_state.signup_role = "collector"
-                    st.session_state.toast_msg = "Join EcoGo as a Collection Partner"
+                    st.session_state.toast_msg = "Join WasteDash as a Collection Partner"
                     navigate_to("Auth")
                 else:
                     db.set_user_mode(user["id"], 1)
@@ -339,7 +339,7 @@ def render_landing_page():
     with col_banner_right:
         render_html("""
         <div class="eco-card" style="height: 100%;">
-            <h4 style="color: #16382B; margin-top: 0; font-size: 1.25rem;">Why Partners Love EcoGo</h4>
+            <h4 style="color: #16382B; margin-top: 0; font-size: 1.25rem;">Why Partners Love WasteDash</h4>
             <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 16px;">
                 <div style="display: flex; gap: 12px; align-items: flex-start;">
                     <div style="background: #E8F5E9; border-radius: 8px; padding: 4px 10px; font-weight: 800; color: #2D6A4F; font-size: 0.9rem;">01</div>
@@ -368,14 +368,14 @@ def render_landing_page():
 
     # 5. Polished Footer
     render_html("""
-    <div class="ecogo-footer">
+    <div class="wastedash-footer">
         <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 30px; margin-bottom: 2rem;">
             <div>
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.8rem;">
-                    <span style="font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800; color: #FFFFFF;">EcoGo</span>
+                    <span style="font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800; color: #FFFFFF;">WasteDash</span>
                 </div>
                 <p style="color: #9EC0AD; font-size: 0.92rem; line-height: 1.6; max-width: 320px;">
-                    EcoGo connects households with local waste collection partners to make segregated doorstep garbage collection effortless and rewarding.
+                    WasteDash connects households with local waste collection partners to make segregated doorstep garbage collection effortless and rewarding.
                 </p>
                 <div style="color: #74C69D; font-size: 0.85rem; font-weight: 700; margin-top: 0.8rem;">
                     Waste, sorted. World, better.
@@ -402,7 +402,7 @@ def render_landing_page():
             </div>
         </div>
         <div style="border-top: 1px solid rgba(255,255,255,0.12); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; color: #8BAF9A; font-size: 0.85rem;">
-            <div>&copy; 2026 EcoGo Technologies. All rights reserved. Built with Python &amp; Streamlit.</div>
+            <div>&copy; 2026 WasteDash Technologies. All rights reserved. Built with Python &amp; Streamlit.</div>
             <div style="display: flex; gap: 18px;">
                 <span>Privacy Policy</span>
                 <span>Terms of Service</span>
@@ -419,7 +419,7 @@ def render_auth_page():
     render_html("""
     <div style="max-width: 580px; margin: 1.5rem auto 1rem auto; text-align: center;">
         <span class="category-badge wet" style="background:#EAF7EE; color:#1B4332;">ACCOUNT ACCESS</span>
-        <h2 style="font-size: 2.2rem; color: #16382B; margin: 0.4rem 0 0.5rem 0;">Welcome to EcoGo</h2>
+        <h2 style="font-size: 2.2rem; color: #16382B; margin: 0.4rem 0 0.5rem 0;">Welcome to WasteDash</h2>
         <p style="color: #52796F; font-size: 1rem;">Log in to schedule waste pickups or earn as a neighborhood collector.</p>
     </div>
     """)
@@ -431,9 +431,9 @@ def render_auth_page():
         with tab_login:
             render_html("<div style='height: 0.6rem;'></div>")
             with st.form("login_form"):
-                contact = st.text_input("Email or Phone Number", placeholder="e.g. rahul@ecogo.in or +91 9876543210")
+                contact = st.text_input("Email or Phone Number", placeholder="e.g. rahul@wastedash.in or +91 9876543210")
                 password = st.text_input("Password", type="password", placeholder="Enter your account password")
-                submitted = st.form_submit_button("Sign In to EcoGo", type="primary", use_container_width=True)
+                submitted = st.form_submit_button("Sign In to WasteDash", type="primary", use_container_width=True)
 
             if submitted:
                 if not contact.strip() or not password:
@@ -453,14 +453,14 @@ def render_auth_page():
             demo_col1, demo_col2 = st.columns(2)
             with demo_col1:
                 if st.button("Demo Customer (Rahul)", key="demo_cust_btn", use_container_width=True):
-                    found = db.get_user_by_contact("rahul@ecogo.in")
+                    found = db.get_user_by_contact("rahul@wastedash.in") or db.get_user_by_contact("rahul@ecogo.in")
                     if found:
                         st.session_state.user_id = found["id"]
                         st.session_state.toast_msg = "Logged in as Customer (Rahul Sharma)"
                         navigate_to("CustomerDashboard")
             with demo_col2:
                 if st.button("Demo Collector (Priya)", key="demo_coll_btn", use_container_width=True):
-                    found = db.get_user_by_contact("priya@ecogo.in")
+                    found = db.get_user_by_contact("priya@wastedash.in") or db.get_user_by_contact("priya@ecogo.in")
                     if found:
                         st.session_state.user_id = found["id"]
                         st.session_state.toast_msg = "Logged in as Collector (Priya Patel)"
@@ -475,7 +475,7 @@ def render_auth_page():
                 new_pass = st.text_input("Create Password (min. 8 characters)", type="password")
                 new_pass_confirm = st.text_input("Confirm Password", type="password")
 
-                render_html("<div style='font-size: 0.88rem; font-weight: 700; color: #16382B; margin-top: 0.8rem;'>I want to use EcoGo to:</div>")
+                render_html("<div style='font-size: 0.88rem; font-weight: 700; color: #16382B; margin-top: 0.8rem;'>I want to use WasteDash to:</div>")
                 mode_choice = st.radio(
                     "Select your primary mode:",
                     options=["Get My Waste Collected (Customer)", "Collect Waste and Earn (Collector Partner)"],
@@ -483,7 +483,7 @@ def render_auth_page():
                     label_visibility="collapsed"
                 )
 
-                signup_submit = st.form_submit_button("Create My EcoGo Account", type="primary", use_container_width=True)
+                signup_submit = st.form_submit_button("Create My WasteDash Account", type="primary", use_container_width=True)
 
             if signup_submit:
                 if not new_name.strip() or not new_contact.strip() or not new_pass:
@@ -629,7 +629,7 @@ def render_tutorial_page():
             db.record_quiz_result(user["id"], score, 3)
 
             if score == 3:
-                st.success("Perfect 3/3! You are certified for EcoGo collection bookings.")
+                st.success("Perfect 3/3! You are certified for WasteDash collection bookings.")
                 st.session_state.quiz_completed = True
             elif score >= 2:
                 st.success(f"Great job! You scored {score}/3. You are ready to book pickups.")

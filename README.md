@@ -1,4 +1,4 @@
-# EcoGo — Waste, sorted. World, better.
+# WasteDash — Waste, sorted. World, better.
 
 A modern, premium waste collection web application inspired by the polished UI/UX of top on-demand platforms (Swiggy, Zomato), specifically re-engineered for community waste segregation and doorstep pickup.
 
@@ -11,11 +11,11 @@ Built with **Python** and **Streamlit**.
 ### 1. Visual Design & Startup Branding
 - **Eco-Friendly Palette:** Curated forest-green (`#1B4332`), sage-green (`#74C69D`), mint (`#EAF7EE`), and warm-white backgrounds.
 - **Modern Typography:** Styled with Google Fonts (`Outfit` + `Plus Jakarta Sans`) with balanced hierarchy and generous whitespace.
-- **Rich Vector Illustrations:** Custom inline SVG graphics for the EcoGo brand mark, neighborhood collection van, and waste stream icons.
+- **Rich Vector Illustrations:** Custom inline SVG graphics for the WasteDash brand mark, neighborhood collection van, and waste stream icons.
 - **Swiggy/Zomato Polish:** Custom navigation bar, category badges, responsive cards, micro-interactions, and live status progress timelines.
 
 ### 2. Startup Landing Page (Homepage)
-- Clean sticky top navigation bar with EcoGo branding, navigation anchors, role switcher, and login triggers.
+- Clean sticky top navigation bar with WasteDash branding, navigation anchors, role switcher, and login triggers.
 - Prominent hero section with the headline **“Waste, sorted. World, better.”** and supporting value proposition.
 - Quick action CTA buttons: **Book a Pickup** (Primary) and **Become a Collector** (Secondary).
 - Three color-coded waste stream cards:
@@ -32,8 +32,8 @@ Built with **Python** and **Streamlit**.
 - Seamless mode switching at any time via the top navigation bar.
 - Secure PBKDF2-HMAC-SHA256 password hashing with unique salt generation.
 - **One-Click Demo Accounts:**
-  - Customer: `rahul@ecogo.in` (Password: `ecogo123`)
-  - Collector: `priya@ecogo.in` (Password: `ecogo123`)
+  - Customer: `rahul@wastedash.in` (Password: `wastedash123`)
+  - Collector: `priya@wastedash.in` (Password: `wastedash123`)
 
 ### 4. Waste Segregation Tutorial & Interactive Quiz
 - Visual first-time onboarding guide explaining proper segregation rules and precautions.
@@ -65,18 +65,18 @@ Built with **Python** and **Streamlit**.
 
 - **Frontend & App Framework:** [Streamlit](https://streamlit.io/) (1.36+)
 - **Backend & Logic:** Python 3.10+
-- **Database:** SQLite (`ecogo.db`) with parameterized queries and atomic updates
+- **Database:** SQLite (`wastedash.db`) with parameterized queries and atomic updates
 - **Styling:** Custom CSS injected via `unsafe_allow_html=True` with `.streamlit/config.toml` theme tokens
 - **Vector Graphics:** Custom SVGs for retina crispness
 
 ```
-EcoGo_Streamlit/
+wastedash/
 ├── .streamlit/
 │   └── config.toml      # Theme tokens (Forest Green, Mint, Sans-Serif font)
 ├── app.py               # Main application router and view controllers
 ├── db.py                # Database queries, schema migrations, and demo data
 ├── styles.py            # CSS design system, typography, and SVG illustrations
-├── ecogo.db             # Persistent SQLite database
+├── wastedash.db         # Persistent SQLite database
 ├── requirements.txt     # Python dependencies
 └── README.md            # Documentation and setup instructions
 ```
@@ -103,7 +103,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Launch EcoGo
+### 3. Launch WasteDash
 
 ```bash
 streamlit run app.py

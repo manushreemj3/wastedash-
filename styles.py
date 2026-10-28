@@ -1,4 +1,4 @@
-# EcoGo Design System and Styles
+# WasteDash Design System and Styles
 # Inspired by modern delivery platforms (Swiggy, Zomato) adapted for eco-friendly waste management
 
 CUSTOM_CSS = """
@@ -44,7 +44,7 @@ header[data-testid="stHeader"] {
 }
 
 /* Top Navigation Bar */
-.ecogo-nav {
+.wastedash-nav, .ecogo-nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -503,7 +503,7 @@ div[data-testid="stToolbar"] {display: none !important;}
 header[data-testid="stHeader"] .stDeployButton {display: none !important;}
 
 /* Footer */
-.ecogo-footer {
+.wastedash-footer, .ecogo-footer {
     background: #14382A;
     color: #E2ECE5;
     border-radius: 24px;
@@ -583,7 +583,7 @@ SVG_HERO_ILLUSTRATION = """<svg width="100%" height="340" viewBox="0 0 520 340" 
 <rect x="115" y="40" width="45" height="35" rx="6" fill="#D8F3DC"/>
 <path d="M125 44 H154 V68 H125 Z" fill="#1B4332" fill-opacity="0.25"/>
 <rect x="20" y="65" width="145" height="14" fill="#2D6A4F"/>
-<text x="35" y="76" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-size="11" font-weight="bold" letter-spacing="1">ECOGO</text>
+<text x="24" y="76" fill="#FFFFFF" font-family="'Outfit', sans-serif" font-size="10" font-weight="bold" letter-spacing="0.5">WASTEDASH</text>
 <circle cx="100" cy="50" r="10" fill="#E8F5E9"/>
 <path d="M100 44 C96 46 95 50 100 55 C105 50 104 46 100 44 Z" fill="#2D6A4F"/>
 <circle cx="162" cy="72" r="5" fill="#FFE082"/>
