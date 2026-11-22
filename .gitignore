@@ -1,0 +1,19 @@
+
+# Environment variables
+.env
+
+# Virtual environment
+.venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Local databases (if not required in Git)
+*.db
+
+# IDE files
+.vscode/
