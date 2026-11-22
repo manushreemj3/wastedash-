@@ -166,15 +166,24 @@ def get_user_by_id(uid):
         return con.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone()
 
 def create_user(name, contact, password, role="customer", worker_enabled=0):
+    role = role.strip().lower()
+
+    if role not in ("customer", "collector"):
+        raise ValueError("Invalid account role")
+
+    worker_enabled = 1 if role == "collector" else 0
+
     contact = contact.strip().lower()
     now_str = datetime.now().isoformat(timespec="seconds")
+
     with get_connection() as con:
         cur = con.cursor()
         cur.execute("""INSERT INTO users(name, contact, password_hash, role, worker_enabled, online_status, created_at)
             VALUES(?, ?, ?, ?, ?, 1, ?)""",
-            (name.strip(), contact, hash_password(password), role, int(worker_enabled), now_str)
+            (name.strip(), contact, hash_password(password), role, worker_enabled, now_str)
         )
         return cur.lastrowid
+
 
 def set_collector_online_status(user_id, online):
     with get_connection() as con:

@@ -34,6 +34,8 @@ if "user_id" not in st.session_state:
     st.session_state.user_id = None
 if "auth_role" not in st.session_state:
     st.session_state.auth_role = "customer"
+if "auth_mode" not in st.session_state:
+    st.session_state.auth_mode = "login"
 if "quiz_completed" not in st.session_state:
     st.session_state.quiz_completed = False
 if "toast_msg" not in st.session_state:
@@ -51,16 +53,20 @@ def get_current_user():
 
 user = get_current_user()
 
+
 def is_collector_user(u):
     """Account type is fixed at registration and can never be switched."""
     return u is not None and u["role"] == "collector"
 
+
 def home_page_for(u):
     return "CollectorDashboard" if is_collector_user(u) else "CustomerDashboard"
+
 
 def navigate_to(page_name):
     st.session_state.current_page = page_name
     st.rerun()
+
 
 def logout():
     st.session_state.user_id = None
