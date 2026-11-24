@@ -15,7 +15,7 @@ Built with **Python** and **Streamlit**.
 - **Swiggy/Zomato Polish:** Custom navigation bar, category badges, responsive cards, micro-interactions, and live status progress timelines.
 
 ### 2. Startup Landing Page (Homepage)
-- Clean sticky top navigation bar with WasteDash branding, navigation anchors, role switcher, and login triggers.
+- Clean sticky top navigation bar with WasteDash branding, navigation anchors, dedicated account dashboard links, and login triggers.
 - Prominent hero section with the headline **“Waste, sorted. World, better.”** and supporting value proposition.
 - Quick action CTA buttons: **Book a Pickup** (Primary) and **Become a Collector** (Secondary).
 - Three color-coded waste stream cards:
@@ -26,20 +26,19 @@ Built with **Python** and **Streamlit**.
 - **Partner Opportunity Banner:** Highlighting part-time earnings for community collectors.
 - Polished footer with directory links, sorting pledges, and copyright.
 
-### 3. Authentication & Role Switching
+### 3. Authentication & Fixed Account Roles
 - Dedicated auth portal with **Log In** and **Create New Account** tabs.
-- Multi-mode registration: choose **Get My Waste Collected** (Customer) or **Collect Waste and Earn** (Collector Partner).
-- Seamless mode switching at any time via the top navigation bar.
+- Fixed role registration: choose **Get My Waste Collected** (Customer) or **Collect Waste and Earn** (Collector Partner). Roles are permanently fixed per account to prevent accidental cross-role contamination.
 - Secure PBKDF2-HMAC-SHA256 password hashing with unique salt generation.
 - **One-Click Demo Accounts:**
   - Customer: `rahul@wastedash.in` (Password: `wastedash123`)
   - Collector: `priya@wastedash.in` (Password: `wastedash123`)
 
-### 4. Waste Segregation Tutorial & Interactive Quiz
-- Visual first-time onboarding guide explaining proper segregation rules and precautions.
-- 3-Question interactive quiz evaluating practical waste sorting scenarios.
-- Instant score calculation and detailed explanations for questions.
-- Certification records stored persistently in the database.
+### 4. Mandatory Waste Segregation Tutorial & Quiz
+- Non-skippable visual first-time onboarding guide explaining proper segregation rules and precautions.
+- 3-Question interactive quiz evaluating practical waste sorting scenarios. Doorstep pickup booking is locked until a passing score (≥ 2/3) is achieved.
+- Instant score calculation, detailed explanations, and review feedback.
+- Certification records stored persistently in MongoDB.
 
 ### 5. Customer Dashboard & Booking Experience
 - Personalized welcome banner with real-time impact metrics (Total Pickups, Active Jobs, Kg Waste Diverted).
@@ -55,7 +54,7 @@ Built with **Python** and **Streamlit**.
 - Operational duty toggle: **ONLINE & READY** vs **OFFLINE**.
 - Performance metrics: Nearby Open Requests, Active Jobs, Completed Collections, and Estimated Earnings (e.g., `~INR 75/trip`).
 - **Open Requests Board:** View resident address, scheduled slot, and volume.
-- **Concurrency-Safe Job Acceptance:** Atomic SQLite database transactions prevent two collectors from claiming the same booking.
+- **Concurrency-Safe Job Acceptance:** Atomic MongoDB document updates prevent two collectors from claiming the same booking.
 - Workflow progression buttons: **Mark as Picked Up** -> **Mark as Completed & Handed Over**.
 - Completed collections ledger with payout calculation.
 
@@ -65,7 +64,7 @@ Built with **Python** and **Streamlit**.
 
 - **Frontend & App Framework:** [Streamlit](https://streamlit.io/) (1.36+)
 - **Backend & Logic:** Python 3.10+
-- **Database:** SQLite (`wastedash.db`) with parameterized queries and atomic updates
+- **Database:** MongoDB (MongoDB Atlas / local) configured via `pymongo` and `.env` with atomic operations
 - **Styling:** Custom CSS injected via `unsafe_allow_html=True` with `.streamlit/config.toml` theme tokens
 - **Vector Graphics:** Custom SVGs for retina crispness
 
@@ -73,11 +72,11 @@ Built with **Python** and **Streamlit**.
 wastedash/
 ├── .streamlit/
 │   └── config.toml      # Theme tokens (Forest Green, Mint, Sans-Serif font)
+├── .env                 # MongoDB connection credentials & cluster URI
 ├── app.py               # Main application router and view controllers
-├── db.py                # Database queries, schema migrations, and demo data
+├── db.py                # MongoDB collections, schema indexing, and demo seeds
 ├── styles.py            # CSS design system, typography, and SVG illustrations
-├── wastedash.db         # Persistent SQLite database
-├── requirements.txt     # Python dependencies
+├── requirements.txt     # Python dependencies (Streamlit, PyMongo, Python-Dotenv, Certifi)
 └── README.md            # Documentation and setup instructions
 ```
 

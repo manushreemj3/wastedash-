@@ -13,8 +13,8 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Initialize database schema, migrations, and demo seeds
-db.init_db()
+# Initialize database schema, indexes, and demo seeds
+db_connected = db.init_db()
 
 # Helper for reliable HTML rendering without markdown code block indentation issues
 def render_html(html_str):
@@ -24,6 +24,16 @@ def render_html(html_str):
 
 # Inject modern Swiggy/Zomato inspired CSS and font styling
 st.markdown(styles.CUSTOM_CSS, unsafe_allow_html=True)
+
+if not db_connected:
+    st.error(
+        "⚠️ **MongoDB Connection Notice**: Unable to connect to MongoDB Atlas.\n\n"
+        "**To fix this in MongoDB Atlas:**\n"
+        "1. Open [MongoDB Atlas Console](https://cloud.mongodb.com/).\n"
+        "2. Go to **Security** → **Network Access**.\n"
+        "3. Click **Add IP Address** and select **Allow Access From Anywhere (`0.0.0.0/0`)** or add your current IP.\n"
+        "4. Wait ~1 minute for Atlas to deploy the change, then refresh this page."
+    )
 
 # -----------------------------------------------------------------------------
 # Session State Setup
@@ -53,6 +63,7 @@ def get_current_user():
 
 user = get_current_user()
 
+<<<<<<< HEAD
 
 def is_collector_user(u):
     """Account type is fixed at registration and can never be switched."""
@@ -62,6 +73,22 @@ def is_collector_user(u):
 def home_page_for(u):
     return "CollectorDashboard" if is_collector_user(u) else "CustomerDashboard"
 
+=======
+def is_collector_user(u):
+    """Account type is fixed at registration and cannot be switched."""
+    if not u:
+        return False
+    return (u.get("role") == "collector") or bool(u.get("worker_enabled"))
+
+def is_quiz_passed(u):
+    """Checks whether user has passed their role-specific mandatory quiz."""
+    if not u:
+        return False
+    if is_collector_user(u):
+        # Collectors must pass the collector quiz
+        return bool(st.session_state.get("quiz_completed", False)) or db.has_completed_quiz(u["id"], quiz_type="collector")
+    return bool(st.session_state.get("quiz_completed", False)) or db.has_completed_quiz(u["id"], quiz_type="customer")
+>>>>>>> 80bdadf (mongodb)
 
 def navigate_to(page_name):
     st.session_state.current_page = page_name
@@ -79,7 +106,7 @@ def logout():
 # Top Navigation Bar (Header)
 # -----------------------------------------------------------------------------
 def render_navbar():
-    nav_col1, nav_col2 = st.columns([1.5, 2.5], vertical_alignment="center")
+    nav_col1, nav_col2 = st.columns([1.3, 1.7], vertical_alignment="center")
 
     with nav_col1:
         render_html(f"""
@@ -95,7 +122,7 @@ def render_navbar():
     with nav_col2:
         if user is None:
             # Public navigation
-            _, b1, b2 = st.columns([1.6, 1.0, 1.4])
+            b_spacer, b1, b2 = st.columns([0.6, 1.1, 1.6])
             with b1:
                 if st.button("Home", key="nav_home", use_container_width=True):
                     navigate_to("Landing")
@@ -103,22 +130,48 @@ def render_navbar():
                 if st.button("Log In / Register", key="nav_auth", type="primary", use_container_width=True):
                     navigate_to("Auth")
         else:
+<<<<<<< HEAD
             # Logged-in navigation: own dashboard + Logout. Roles are fixed per account (no switching).
             _, b1, b2 = st.columns([1.6, 1.4, 0.9])
+=======
+            # Logged-in navigation: strictly own dashboard + Logout. Mode switching is removed.
+            is_collector = is_collector_user(user)
+            quiz_passed = is_quiz_passed(user)
+>>>>>>> 80bdadf (mongodb)
 
+            b_spacer, b1, b2 = st.columns([0.6, 1.7, 1.0])
             with b1:
+<<<<<<< HEAD
                 if is_collector_user(user):
                     if st.button("Partner Hub", key="nav_hub", type="primary", use_container_width=True):
                         navigate_to("CollectorDashboard")
                 else:
                     if st.button("My Bookings", key="nav_bookings", type="primary", use_container_width=True):
                         navigate_to("CustomerDashboard")
+=======
+                if is_collector:
+                    if quiz_passed:
+                        is_hub_active = st.session_state.get("current_page") == "CollectorDashboard"
+                        if st.button("Partner Hub", key="nav_hub", type="primary" if is_hub_active else "secondary", use_container_width=True):
+                            navigate_to("CollectorDashboard")
+                    else:
+                        if st.button("Mandatory Quiz", key="nav_collector_quiz", type="primary", use_container_width=True):
+                            navigate_to("Tutorial")
+                else:
+                    if quiz_passed:
+                        is_bookings_active = st.session_state.get("current_page") == "CustomerDashboard"
+                        if st.button("My Bookings", key="nav_bookings", type="primary" if is_bookings_active else "secondary", use_container_width=True):
+                            navigate_to("CustomerDashboard")
+                    else:
+                        if st.button("Mandatory Quiz", key="nav_customer_quiz", type="primary", use_container_width=True):
+                            navigate_to("Tutorial")
+>>>>>>> 80bdadf (mongodb)
 
             with b2:
                 if st.button("Logout", key="nav_logout", use_container_width=True):
                     logout()
 
-    render_html("<hr style='margin: 0.6rem 0 1.6rem 0; border: none; border-top: 1px solid #E6ECE8;'>")
+    render_html("<hr style='margin: 0.8rem 0 1.8rem 0; border: none; border-top: 1px solid #E6ECE8;'>")
 
 render_navbar()
 
@@ -145,9 +198,11 @@ def render_landing_page():
         </div>
         """)
 
+        render_html("<div style='height: 0.8rem;'></div>")
         b_col1, b_col2 = st.columns(2)
         with b_col1:
             if st.button("Book a Pickup", key="hero_book", type="primary", use_container_width=True):
+<<<<<<< HEAD
                 st.session_state.auth_role = "customer"
                 st.session_state.toast_msg = "Please log in or sign up as a Customer to schedule your pickup"
                 navigate_to("Auth")
@@ -156,6 +211,33 @@ def render_landing_page():
                 st.session_state.auth_role = "collector"
                 st.session_state.toast_msg = "Join WasteDash as a Collection Partner"
                 navigate_to("Auth")
+=======
+                if user is None:
+                    st.session_state.auth_mode = "login"
+                    st.session_state.toast_msg = "Please log in or sign up to schedule your pickup"
+                    navigate_to("Auth")
+                elif is_collector_user(user):
+                    st.session_state.toast_msg = "You are signed in as a Collector Partner"
+                    navigate_to("CollectorDashboard")
+                else:
+                    if not is_quiz_passed(user):
+                        st.session_state.toast_msg = "Please complete the mandatory quiz first"
+                        navigate_to("Tutorial")
+                    else:
+                        navigate_to("CustomerDashboard")
+        with b_col2:
+            if st.button("Become a Collector", key="hero_collect", type="secondary", use_container_width=True):
+                if user is None:
+                    st.session_state.auth_mode = "signup"
+                    st.session_state.signup_role = "collector"
+                    st.session_state.toast_msg = "Join WasteDash as a Collection Partner"
+                    navigate_to("Auth")
+                elif is_collector_user(user):
+                    navigate_to("CollectorDashboard")
+                else:
+                    st.warning("⚠️ Each account has a fixed role. You are signed in as a Customer. To collect waste, please register a separate Collector account.")
+        render_html("<div style='height: 0.6rem;'></div>")
+>>>>>>> 80bdadf (mongodb)
 
         # Key Features Row
         render_html("""
@@ -318,9 +400,22 @@ def render_landing_page():
         </div>
         """)
 
+        render_html("<div style='height: 0.8rem;'></div>")
         if st.button("Register as a Collector Partner", key="earn_btn", type="primary", use_container_width=True):
+<<<<<<< HEAD
             st.session_state.auth_role = "collector"
             navigate_to("Auth")
+=======
+            if user is None:
+                st.session_state.auth_mode = "signup"
+                st.session_state.signup_role = "collector"
+                navigate_to("Auth")
+            elif is_collector_user(user):
+                navigate_to("CollectorDashboard")
+            else:
+                st.warning("⚠️ You are signed in as a Customer. Accounts have fixed roles. To collect waste, please register a separate Collector account.")
+        render_html("<div style='height: 0.6rem;'></div>")
+>>>>>>> 80bdadf (mongodb)
 
     with col_banner_right:
         render_html("""
@@ -452,11 +547,33 @@ def render_auth_page():
                     else:
                         st.session_state.user_id = found["id"]
                         st.session_state.toast_msg = f"Welcome back, {found['name']}"
+<<<<<<< HEAD
                         navigate_to(home_page_for(found))
+=======
+                        if is_quiz_passed(found):
+                            if is_collector_user(found):
+                                navigate_to("CollectorDashboard")
+                            else:
+                                navigate_to("CustomerDashboard")
+                        else:
+                            if is_collector_user(found):
+                                st.session_state.toast_msg = "Please complete the mandatory Collector Onboarding Quiz first."
+                            else:
+                                st.session_state.toast_msg = "Please complete the mandatory quiz to activate your booking privileges"
+                            navigate_to("Tutorial")
+                    else:
+                        st.error("Invalid credentials. Please verify your email/phone and password.")
+>>>>>>> 80bdadf (mongodb)
 
             # Quick demo login for the selected role
             render_html("<div style='text-align: center; color: #718F83; font-size: 0.85rem; margin: 1.4rem 0 0.8rem 0;'>Instant Demo Sign-in for Evaluation:</div>")
+<<<<<<< HEAD
             if role == "customer":
+=======
+            render_html("<div style='height: 0.3rem;'></div>")
+            demo_col1, demo_col2 = st.columns(2)
+            with demo_col1:
+>>>>>>> 80bdadf (mongodb)
                 if st.button("Demo Customer (Rahul)", key="demo_cust_btn", use_container_width=True):
                     found = db.get_user_by_contact("rahul@wastedash.in") or db.get_user_by_contact("rahul@ecogo.in")
                     if found and found["role"] == "customer":
@@ -470,6 +587,7 @@ def render_auth_page():
                         st.session_state.user_id = found["id"]
                         st.session_state.toast_msg = "Logged in as Collector (Priya Patel)"
                         navigate_to("CollectorDashboard")
+            render_html("<div style='height: 0.6rem;'></div>")
 
         with tab_signup:
             render_html("<div style='height: 0.6rem;'></div>")
@@ -501,7 +619,12 @@ def render_auth_page():
                         )
                         st.session_state.user_id = user_id
                         st.session_state.toast_msg = f"Account created. Welcome, {new_name.split()[0]}"
-                        navigate_to("Tutorial")
+                        if is_worker:
+                            st.session_state.toast_msg = "Welcome! Please pass the mandatory Collector Onboarding Quiz to start accepting jobs."
+                            navigate_to("Tutorial")
+                        else:
+                            st.session_state.toast_msg = "Welcome! Please pass the mandatory quiz to unlock collection bookings."
+                            navigate_to("Tutorial")
 
         render_html("<div style='height: 1.2rem;'></div>")
         if st.button("Return to Homepage", key="back_home_btn", use_container_width=True):
@@ -511,6 +634,16 @@ def render_auth_page():
 # PAGE 3: Waste Segregation Tutorial & Interactive Quiz
 # -----------------------------------------------------------------------------
 def render_tutorial_page():
+    is_collector = is_collector_user(user)
+
+    if is_collector:
+        _render_collector_quiz()
+    else:
+        _render_customer_quiz()
+
+
+def _render_customer_quiz():
+    """Customer onboarding: home waste segregation quiz."""
     render_html("""
     <div style="max-width: 800px; margin: 0 auto 1.5rem auto; text-align: center;">
         <span class="category-badge wet" style="background:#EAF7EE; color:#1B4332;">FIRST-TIME ONBOARDING</span>
@@ -565,7 +698,6 @@ def render_tutorial_page():
 
     render_html("<div style='height: 2rem;'></div>")
 
-    # 3-Question Quiz
     render_html("""
     <div style="max-width: 800px; margin: 0 auto; background: #FFFFFF; border: 1px solid #E3ECE5; border-radius: 22px; padding: 2rem 2.2rem; box-shadow: 0 8px 24px rgba(22, 62, 47, 0.05);">
         <h3 style="color: #16382B; margin-top: 0; font-size: 1.4rem;">Knowledge Check (3 Questions)</h3>
@@ -620,18 +752,18 @@ def render_tutorial_page():
             ans3_correct = "Wrap securely in newspaper" in q3
 
             score = sum([ans1_correct, ans2_correct, ans3_correct])
-            db.record_quiz_result(user["id"], score, 3)
+            db.record_quiz_result(user["id"], score, 3, quiz_type="customer")
 
             if score == 3:
                 st.success("Perfect 3/3! You are certified for WasteDash collection bookings.")
                 st.session_state.quiz_completed = True
             elif score >= 2:
-                st.success(f"Great job! You scored {score}/3. You are ready to book pickups.")
+                st.success(f"Great job! You scored {score}/3. You are certified for WasteDash bookings.")
                 st.session_state.quiz_completed = True
             else:
-                st.error(f"You scored {score}/3. Please review the explanations below and try again.")
+                st.error(f"Score: {score}/3. You need at least 2/3 correct to pass. Doorstep pickup booking remains locked. Please review the material and try again.")
+                st.session_state.quiz_completed = False
 
-            # Explanations for questions
             st.markdown("#### Review & Explanations:")
             if ans1_correct:
                 st.markdown("**Question 1 [Correct]:** Fruit peels and vegetable scraps are biodegradable organic waste that decompose into rich compost.")
@@ -648,15 +780,191 @@ def render_tutorial_page():
             else:
                 st.markdown("**Question 3 [Review]:** Sanitary waste must be **wrapped securely in paper** and segregated. Never flush or mix loose.")
 
-    if st.session_state.get("quiz_completed", False) or db.has_completed_quiz(user["id"]):
+    quiz_passed = is_quiz_passed(user)
+    if quiz_passed:
         render_html("<div style='height: 1.2rem;'></div>")
+<<<<<<< HEAD
         if st.button("Continue to Dashboard", type="primary", use_container_width=True):
             navigate_to(home_page_for(user))
+=======
+        if st.button("Continue to Customer Dashboard →", type="primary", use_container_width=True):
+            navigate_to("CustomerDashboard")
+    else:
+        render_html("""
+        <div style="margin-top: 1.5rem; text-align: center; color: #7F4D0E; font-size: 0.92rem; background: #FFFBEB; border: 1px solid #FDE68A; padding: 0.9rem 1.2rem; border-radius: 14px; max-width: 800px; margin-left: auto; margin-right: auto;">
+            🔒 <b>Mandatory Onboarding:</b> This quiz cannot be skipped. Complete the 3 questions with at least 2/3 correct to unlock your doorstep pickup booking privileges.
+        </div>
+        """)
+
+
+def _render_collector_quiz():
+    """Collector onboarding: customer handling & professional etiquette quiz."""
+    render_html("""
+    <div style="max-width: 800px; margin: 0 auto 1.5rem auto; text-align: center;">
+        <span class="category-badge wet" style="background:#E8F4FD; color:#0D47A1;">COLLECTOR PARTNER ONBOARDING</span>
+        <h2 style="font-size: 2.2rem; color: #16382B; margin: 0.4rem 0 0.5rem 0;">Collector Partner Onboarding & Customer Etiquette</h2>
+        <p style="color: #52796F; font-size: 1.05rem; line-height: 1.5;">
+            Review these professional standards before you start accepting jobs. Residents trust WasteDash partners to be courteous, safe, and reliable.
+        </p>
+    </div>
+    """)
+
+    col_c1, col_c2, col_c3 = st.columns(3, gap="medium")
+
+    with col_c1:
+        render_html("""
+        <div class="eco-card" style="height: 100%; border-left: 4px solid #1565C0; background: #F0F7FF;">
+            <div style="font-size: 2rem; margin-bottom: 0.6rem;">🤝</div>
+            <h3 style="color: #0D47A1; margin-top: 0;">1. Customer Handling & Arrival</h3>
+            <div style="font-size: 0.85rem; color: #1565C0; font-weight: 700; margin-bottom: 0.5rem;">PROFESSIONAL ETIQUETTE</div>
+            <p style="color: #3F5E72; font-size: 0.88rem; line-height: 1.5;">
+                <b>On arrival:</b> Check resident notes for gate codes or entry instructions before ringing. Call via the app if the doorbell doesn't work.<br><br>
+                <b>Conduct:</b> Greet politely, introduce yourself as the WasteDash Partner, never enter the residence, maintain quiet and clean collection.
+            </p>
+        </div>
+        """)
+
+    with col_c2:
+        render_html("""
+        <div class="eco-card" style="height: 100%; border-left: 4px solid #2E7D32; background: #F1F8F1;">
+            <div style="font-size: 2rem; margin-bottom: 0.6rem;">🗂️</div>
+            <h3 style="color: #1B4332; margin-top: 0;">2. Doorstep Verification</h3>
+            <div style="font-size: 0.85rem; color: #2D6A4F; font-weight: 700; margin-bottom: 0.5rem;">SEGREGATION CHECKS</div>
+            <p style="color: #4A6356; font-size: 0.88rem; line-height: 1.5;">
+                <b>Before loading:</b> Visually verify segregation matches the booking type (Wet / Dry / Sanitary).<br><br>
+                <b>Mixed waste:</b> Politely guide the resident on correct sorting. Never argue or force collection of unsegregated waste — escalate if unresolved.
+            </p>
+        </div>
+        """)
+
+    with col_c3:
+        render_html("""
+        <div class="eco-card" style="height: 100%; border-left: 4px solid #C62828; background: #FFF5F5;">
+            <div style="font-size: 2rem; margin-bottom: 0.6rem;">🧤</div>
+            <h3 style="color: #BF360C; margin-top: 0;">3. Safety & Hygiene</h3>
+            <div style="font-size: 0.85rem; color: #D84315; font-weight: 700; margin-bottom: 0.5rem;">PROTECTION PROTOCOLS</div>
+            <p style="color: #6E4F47; font-size: 0.88rem; line-height: 1.5;">
+                <b>Always wear:</b> Puncture-resistant heavy-duty gloves and a face mask during all collection.<br><br>
+                <b>Sanitary waste:</b> Must be double-wrapped in paper and marked with a red cross. Never compress or touch directly. Handle last and dispose separately.
+            </p>
+        </div>
+        """)
+
+    render_html("<div style='height: 2rem;'></div>")
+
+    render_html("""
+    <div style="max-width: 800px; margin: 0 auto; background: #FFFFFF; border: 1px solid #BBDEFB; border-radius: 22px; padding: 2rem 2.2rem; box-shadow: 0 8px 24px rgba(13, 71, 161, 0.06);">
+        <h3 style="color: #0D47A1; margin-top: 0; font-size: 1.4rem;">Collector Certification Check (3 Questions)</h3>
+        <p style="color: #52796F; font-size: 0.95rem; margin-bottom: 1.5rem;">Answer all 3 questions correctly (min. 2/3) to unlock your Partner Hub and start accepting jobs.</p>
+    </div>
+    """)
+
+    with st.form("collector_quiz_form"):
+        cq1 = st.radio(
+            "1. You arrive at a gated society where the resident has a specific entry note. What should you do first?",
+            options=[
+                "Ring the main bell repeatedly until someone opens the gate",
+                "Check the resident's gate/entry notes in the app, then call politely if needed",
+                "Skip the booking and mark it as inaccessible immediately",
+                "Enter through any available alternate entrance"
+            ],
+            index=None
+        )
+
+        render_html("<div style='height: 0.8rem;'></div>")
+
+        cq2 = st.radio(
+            "2. A resident has mixed wet organic kitchen waste with dry recyclable plastic bottles in one bag. How do you handle this?",
+            options=[
+                "Collect it anyway to avoid conflict — segregation is not your responsibility",
+                "Refuse the booking and leave without explanation",
+                "Politely explain the segregation guidelines and guide the resident on correct sorting before collecting",
+                "Silently sort it yourself on the spot and collect everything"
+            ],
+            index=None
+        )
+
+        render_html("<div style='height: 0.8rem;'></div>")
+
+        cq3 = st.radio(
+            "3. A resident hands you a red-marked sanitary waste bag containing diapers. What is the correct safety protocol?",
+            options=[
+                "Compress it tightly into your main collection bag to save space",
+                "Wear heavy-duty protective gloves, verify it is double-wrapped in paper, never touch directly, and handle it last — disposing separately",
+                "Ask the resident to dispose of it themselves as it is not covered",
+                "Collect it bare-handed if no gloves are available to avoid delays"
+            ],
+            index=None
+        )
+
+        render_html("<div style='height: 1rem;'></div>")
+        cquiz_submit = st.form_submit_button("Submit & Get Certified", type="primary", use_container_width=True)
+
+    if cquiz_submit:
+        if None in (cq1, cq2, cq3):
+            st.warning("Please select an answer for all 3 questions before submitting.")
+        else:
+            cans1_correct = "Check the resident's gate/entry notes" in cq1
+            cans2_correct = "Politely explain the segregation guidelines" in cq2
+            cans3_correct = "Wear heavy-duty protective gloves" in cq3
+
+            score = sum([cans1_correct, cans2_correct, cans3_correct])
+            db.record_quiz_result(user["id"], score, 3, quiz_type="collector")
+
+            if score == 3:
+                st.success("Perfect 3/3! You are certified as a WasteDash Collector Partner. Welcome to the team!")
+                st.session_state.quiz_completed = True
+            elif score >= 2:
+                st.success(f"Well done! You scored {score}/3. You are certified to start accepting collection jobs.")
+                st.session_state.quiz_completed = True
+            else:
+                st.error(f"Score: {score}/3. You need at least 2/3 correct to become a certified partner. Please review the material above and try again.")
+                st.session_state.quiz_completed = False
+
+            st.markdown("#### Review & Explanations:")
+            if cans1_correct:
+                st.markdown("**Question 1 [Correct]:** Always read resident notes first — they may have specific entry codes or timing instructions critical for access.")
+            else:
+                st.markdown("**Question 1 [Review]:** Always **check the resident's entry notes in the app** first, then call politely if needed. Never ring repeatedly or enter unauthorized.")
+
+            if cans2_correct:
+                st.markdown("**Question 2 [Correct]:** Politely guiding residents on segregation maintains trust and ensures recyclables aren't contaminated.")
+            else:
+                st.markdown("**Question 2 [Review]:** **Politely explain and guide** the resident. Collecting mixed waste contaminates the entire stream. Never argue or silently sort.")
+
+            if cans3_correct:
+                st.markdown("**Question 3 [Correct]:** Sanitary waste carries infection risk — heavy-duty gloves, double-wrapping, and separate disposal are non-negotiable.")
+            else:
+                st.markdown("**Question 3 [Review]:** **Always use protective gloves**, verify double-wrapping, never compress or touch bare-handed. Handle sanitary waste last and dispose separately.")
+
+    quiz_passed = is_quiz_passed(user)
+    if quiz_passed:
+        render_html("<div style='height: 1.2rem;'></div>")
+        if st.button("Continue to Partner Hub →", type="primary", use_container_width=True):
+            navigate_to("CollectorDashboard")
+    else:
+        render_html("""
+        <div style="margin-top: 1.5rem; text-align: center; color: #0D47A1; font-size: 0.92rem; background: #E3F2FD; border: 1px solid #BBDEFB; padding: 0.9rem 1.2rem; border-radius: 14px; max-width: 800px; margin-left: auto; margin-right: auto;">
+            🔒 <b>Mandatory Collector Certification:</b> This quiz cannot be skipped. Score at least 2/3 to unlock your Partner Hub and start accepting waste collection jobs.
+        </div>
+        """)
+
+>>>>>>> 80bdadf (mongodb)
 
 # -----------------------------------------------------------------------------
 # PAGE 4: Customer Dashboard & Pickup Booking
 # -----------------------------------------------------------------------------
 def render_customer_dashboard():
+    # Role & Quiz Guards
+    if is_collector_user(user):
+        navigate_to("CollectorDashboard")
+        return
+
+    if not is_quiz_passed(user):
+        st.session_state.toast_msg = "Please complete the mandatory quiz first"
+        navigate_to("Tutorial")
+        return
+
     # Welcome Header & Metrics
     first_name = user["name"].split()[0]
     my_bookings = db.get_bookings_for_customer(user["id"])
@@ -717,8 +1025,8 @@ def render_customer_dashboard():
                     }.get(status, ("#E8F5E9", "#2E7D32", status))
 
                     render_html(f"""
-                    <div class="eco-card" style="margin-bottom: 1.2rem; border-left: 6px solid #2D6A4F;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: gap: 10px;">
+                    <div class="eco-card" style="margin-bottom: 1rem; border-left: 6px solid #2D6A4F;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
                             <div>
                                 <span style="background: {status_badge[0]}; color: {status_badge[1]}; padding: 0.35rem 0.85rem; border-radius: 999px; font-size: 0.8rem; font-weight: 700;">
                                     {status_badge[2]}
@@ -764,10 +1072,12 @@ def render_customer_dashboard():
                     """)
 
                     if status == "Open":
-                        if st.button(f"Cancel Request #{b['id']}", key=f"cancel_btn_{b['id']}"):
+                        render_html("<div style='height: 0.4rem;'></div>")
+                        if st.button(f"Cancel Request #{b['id']}", key=f"cancel_btn_{b['id']}", type="secondary", use_container_width=True):
                             db.update_booking_status(b["id"], "Cancelled")
                             st.session_state.toast_msg = f"Booking #{b['id']} has been cancelled"
                             st.rerun()
+                    render_html("<div style='height: 1.2rem;'></div>")
 
             # Completed & Past Bookings
             past_bookings = [b for b in my_bookings if b["status"] in ("Completed", "Cancelled")]
@@ -847,13 +1157,23 @@ def render_customer_dashboard():
                     placeholder="e.g. Leave by door, call on arrival, gate code 402"
                 )
 
+<<<<<<< HEAD
             render_html("""
             <div style="background: #F4F9F5; border: 1px solid #CDE2D4; border-radius: 14px; padding: 0.9rem 1.2rem; margin: 0.5rem 0 1.2rem 0; font-size: 0.88rem; line-height: 1.5; color: #1B4332;">
                 <b>Free Neighborhood Pickup:</b> Our verified partner will arrive during your chosen slot. Please keep your waste segregated as selected.
             </div>
             """)
 
+=======
+            render_html("<div style='height: 1.2rem;'></div>")
+>>>>>>> 80bdadf (mongodb)
             book_submit = st.form_submit_button("Confirm & Schedule Pickup", type="primary", use_container_width=True)
+
+        render_html("""
+        <div style="background: #F4F9F5; border: 1px solid #CDE2D4; border-radius: 14px; padding: 1rem 1.2rem; margin: 1rem 0; font-size: 0.88rem; color: #1B4332; line-height: 1.5;">
+            <b>Free Neighborhood Pickup:</b> Our verified partner will arrive during your chosen slot. Please keep your waste segregated as selected.
+        </div>
+        """)
 
         if book_submit:
             if not address_input.strip():
@@ -877,8 +1197,22 @@ def render_customer_dashboard():
 # PAGE 5: Collector Dashboard & Work Queue
 # -----------------------------------------------------------------------------
 def render_collector_dashboard():
+    if not is_collector_user(user):
+        navigate_to("CustomerDashboard")
+        return
+
+    if not is_quiz_passed(user):
+        st.session_state.toast_msg = "Please complete the mandatory Collector Onboarding Quiz first."
+        navigate_to("Tutorial")
+        return
+
     first_name = user["name"].split()[0]
     online = bool(user["online_status"]) if "online_status" in user.keys() else True
+
+    # Auto-release any stale Accepted bookings (5-min window expired)
+    released = db.release_expired_accepted_bookings()
+    if released > 0:
+        st.session_state.toast_msg = f"⏱️ {released} booking(s) auto-released back to Open (5-min window expired)."
 
     # Collector Header Banner
     render_html(f"""
@@ -971,6 +1305,16 @@ def render_collector_dashboard():
             </div>
             """)
         else:
+            # Check if this collector already has an active job
+            has_active = db.collector_has_active_job(user["id"])
+
+            if has_active:
+                render_html("""
+                <div style="background: #FFF8E1; border: 1px solid #FFD54F; border-radius: 14px; padding: 1rem 1.4rem; margin-bottom: 1.4rem; color: #6D4C00; font-size: 0.95rem;">
+                    🚫 <b>One Job at a Time:</b> You already have an active job in progress. Complete or hand over your current pickup before accepting a new one.
+                </div>
+                """)
+
             st.markdown("### Available Pickup Requests Near You")
             st.caption("Review address and waste type. Click 'Accept Pickup' to claim. (First collector to accept gets the job.)")
 
@@ -1003,15 +1347,28 @@ def render_collector_dashboard():
                 </div>
                 """)
 
-                # Concurrency-safe Accept button
-                if st.button(f"Accept Pickup #{b['id']}", key=f"accept_job_{b['id']}", type="primary", use_container_width=True):
-                    success = db.accept_booking(b["id"], user["id"])
-                    if success:
-                        st.session_state.toast_msg = f"Job #{b['id']} accepted. Added to your In-Progress list."
-                        st.rerun()
-                    else:
-                        st.error(f"Booking #{b['id']} was just accepted by another collector! Refreshing list...")
-                        st.rerun()
+                render_html("<div style='height: 0.4rem;'></div>")
+                if has_active:
+                    # Greyed-out disabled indicator
+                    render_html(f"""
+                    <div style="background: #F5F5F5; border: 1px solid #E0E0E0; border-radius: 10px; padding: 0.75rem 1rem; text-align: center; color: #9E9E9E; font-size: 0.9rem; font-weight: 600;">
+                        🔒 Locked — Complete your active job first
+                    </div>
+                    """)
+                else:
+                    # Concurrency-safe Accept button
+                    if st.button(f"Accept Pickup #{b['id']}", key=f"accept_job_{b['id']}", type="primary", use_container_width=True):
+                        if db.collector_has_active_job(user["id"]):
+                            st.error("You cannot accept more than one pickup at a time! Complete or reject your current job first.")
+                        else:
+                            success = db.accept_booking(b["id"], user["id"])
+                            if success:
+                                st.session_state.toast_msg = f"Job #{b['id']} accepted. You have 5 minutes to reach the doorstep or reject."
+                                st.rerun()
+                            else:
+                                st.error(f"Booking #{b['id']} was just accepted by another collector! Refreshing list...")
+                                st.rerun()
+                render_html("<div style='height: 1.4rem;'></div>")
 
     with tab_active:
         if not active_jobs:
@@ -1027,9 +1384,43 @@ def render_collector_dashboard():
             st.markdown("### Your Active Route & Next Actions")
             for b in active_jobs:
                 curr_status = b["status"]
+
+                # Compute 5-min countdown for Accepted jobs
+                time_warning_html = ""
+                if curr_status == "Accepted" and b.get("updated_at"):
+                    try:
+                        accepted_at = datetime.fromisoformat(b["updated_at"])
+                        elapsed_secs = (datetime.now() - accepted_at).total_seconds()
+                        remaining_secs = max(0, 300 - int(elapsed_secs))
+                        mins_left = remaining_secs // 60
+                        secs_left = remaining_secs % 60
+                        if remaining_secs <= 60:
+                            timer_color = "#C62828"
+                            timer_bg = "#FFEBEE"
+                            timer_border = "#EF9A9A"
+                            urgency = "⚠️ URGENT — Auto-releasing soon!"
+                        elif remaining_secs <= 180:
+                            timer_color = "#E65100"
+                            timer_bg = "#FFF3E0"
+                            timer_border = "#FFCC80"
+                            urgency = "⏱️ Hurry! Get to the pickup point."
+                        else:
+                            timer_color = "#2E7D32"
+                            timer_bg = "#E8F5E9"
+                            timer_border = "#A5D6A7"
+                            urgency = "✅ On time — head to the address."
+                        time_warning_html = f"""
+                        <div style="background: {timer_bg}; border: 1px solid {timer_border}; border-radius: 12px; padding: 0.75rem 1.1rem; margin-bottom: 0.8rem; font-size: 0.9rem; color: {timer_color}; font-weight: 700; display: flex; align-items: center; justify-content: space-between;">
+                            <span>{urgency}</span>
+                            <span style="font-size: 1.1rem; letter-spacing: 0.05em;">{mins_left}m {secs_left:02d}s left to mark Picked Up</span>
+                        </div>
+                        """
+                    except Exception:
+                        pass
                 render_html(f"""
-                <div class="eco-card" style="margin-bottom: 1.2rem; border-left: 6px solid {'#0277BD' if curr_status == 'Accepted' else '#7B1FA2'};">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
+                <div class="eco-card" style="margin-bottom: 1rem; border-left: 6px solid {'#0277BD' if curr_status == 'Accepted' else '#7B1FA2'};">
+                    {time_warning_html}
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
                         <div>
                             <span style="background: {'#E1F5FE' if curr_status == 'Accepted' else '#EDE7F6'}; color: {'#0277BD' if curr_status == 'Accepted' else '#7B1FA2'}; padding: 0.35rem 0.85rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700;">
                                 {'ACCEPTED · READY FOR PICKUP' if curr_status == 'Accepted' else 'PICKED UP · IN TRANSIT TO RECYCLING'}
@@ -1051,21 +1442,30 @@ def render_collector_dashboard():
                 </div>
                 """)
 
-                col_act1, col_act2 = st.columns(2)
-                with col_act1:
-                    if curr_status == "Accepted":
+                render_html("<div style='height: 0.4rem;'></div>")
+                if curr_status == "Accepted":
+                    col_b1, col_b2 = st.columns([1.2, 1.0])
+                    with col_b1:
                         if st.button(f"Mark as Picked Up #{b['id']}", key=f"mark_picked_{b['id']}", type="primary", use_container_width=True):
                             db.update_booking_status(b["id"], "Picked up")
                             st.session_state.toast_msg = f"Status updated: Pickup #{b['id']} collected from doorstep."
                             st.rerun()
-                    elif curr_status == "Picked up":
+                    with col_b2:
+                        if st.button(f"Reject Pickup #{b['id']}", key=f"reject_job_{b['id']}", use_container_width=True):
+                            db.reject_booking(b["id"], user["id"])
+                            st.session_state.toast_msg = f"Pickup #{b['id']} rejected and returned to open requests."
+                            st.rerun()
+                    st.caption("⏱️ You can reject this pickup within 5 mins if unavailable. If untouched for 5 mins, it auto-releases back to the pool.")
+                elif curr_status == "Picked up":
+                    col_act1, col_act2 = st.columns([1.4, 1], vertical_alignment="center")
+                    with col_act1:
                         if st.button(f"Mark as Completed & Handed Over #{b['id']}", key=f"mark_comp_{b['id']}", type="primary", use_container_width=True):
                             db.update_booking_status(b["id"], "Completed")
                             st.session_state.toast_msg = f"Collection #{b['id']} completed and credited to your log."
                             st.rerun()
-
-                with col_act2:
-                    st.caption("Coordinate with resident via phone if gate is locked or bins are inside.")
+                    with col_act2:
+                        st.caption("Coordinate with resident via phone if gate is locked or bins are inside.")
+                render_html("<div style='height: 1.4rem;'></div>")
 
     with tab_completed:
         if not completed_jobs:
@@ -1103,6 +1503,7 @@ def render_collector_dashboard():
 # -----------------------------------------------------------------------------
 page = st.session_state.get("current_page", "Landing")
 
+<<<<<<< HEAD
 # Roles are fixed: logged-in users only ever see their own dashboard (or the tutorial).
 if user is not None and page != "Tutorial":
     page = home_page_for(user)
@@ -1112,6 +1513,47 @@ if page == "Landing":
     render_landing_page()
 elif page == "Auth":
     render_auth_page()
+=======
+if user is not None:
+    is_coll = is_collector_user(user)
+    quiz_passed = is_quiz_passed(user)
+
+    if is_coll:
+        # Collectors: must pass quiz before accessing hub; block landing/auth/customer pages
+        if not quiz_passed:
+            if page not in ("Tutorial",):
+                page = "Tutorial"
+                st.session_state.current_page = page
+        else:
+            if page in ("Landing", "Auth", "CustomerDashboard", "Tutorial"):
+                page = "CollectorDashboard"
+                st.session_state.current_page = page
+    else:
+        # Customer accounts: Quiz is mandatory and cannot be skipped
+        if not quiz_passed:
+            page = "Tutorial"
+            st.session_state.current_page = page
+        elif page in ("Landing", "Auth", "CollectorDashboard"):
+            page = "CustomerDashboard"
+            st.session_state.current_page = page
+
+if page == "Landing":
+    if user is not None:
+        if is_collector_user(user):
+            render_collector_dashboard()
+        else:
+            render_customer_dashboard()
+    else:
+        render_landing_page()
+elif page == "Auth":
+    if user is not None:
+        if is_collector_user(user):
+            render_collector_dashboard()
+        else:
+            render_customer_dashboard()
+    else:
+        render_auth_page()
+>>>>>>> 80bdadf (mongodb)
 elif page == "Tutorial":
     render_tutorial_page()
 elif page == "CustomerDashboard":

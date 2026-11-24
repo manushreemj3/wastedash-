@@ -30,16 +30,15 @@ h1, h2, h3, h4, .brand-font {
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header[data-testid="stHeader"] {
-    background: transparent;
-    height: 1.5rem;
+    display: none !important;
 }
 .stDeployButton {display: none;}
 [data-testid="stDecoration"] {display: none;}
 
 /* Main container spacing */
 .block-container {
-    padding-top: 1rem !important;
-    padding-bottom: 3rem !important;
+    padding-top: 1.8rem !important;
+    padding-bottom: 4rem !important;
     max-width: 1200px !important;
 }
 
@@ -202,13 +201,16 @@ header[data-testid="stHeader"] {
 .eco-card {
     background: #FFFFFF;
     border: 1px solid #E6EFE8;
-    border-radius: 22px;
-    padding: 1.8rem 1.8rem;
-    box-shadow: 0 8px 24px rgba(23, 62, 45, 0.04);
+    border-radius: 20px;
+    padding: 1.6rem 1.8rem;
+    box-shadow: 0 6px 20px rgba(23, 62, 45, 0.04);
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-    height: 100%;
     position: relative;
-    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.eco-card-h100 {
+    height: 100%;
 }
 
 .eco-card:hover {
@@ -356,6 +358,11 @@ header[data-testid="stHeader"] {
 }
 
 /* Buttons Styling */
+div.stButton {
+    width: 100%;
+    margin: 0.3rem 0 !important;
+}
+
 div.stButton > button,
 div[data-testid="stFormSubmitButton"] > button,
 button[data-testid="baseButton-primary"],
@@ -366,11 +373,21 @@ button[kind="formSubmit"] {
     border-radius: 14px !important;
     font-family: 'Plus Jakarta Sans', sans-serif !important;
     font-weight: 700 !important;
-    font-size: 0.95rem !important;
-    padding: 0.65rem 1.4rem !important;
-    min-height: 2.85rem !important;
+    font-size: 0.92rem !important;
+    padding: 0.6rem 1.2rem !important;
+    min-height: 2.75rem !important;
     transition: all 0.25s ease !important;
     border: 1px solid transparent !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+}
+
+/* Prevent narrow button wrapping in columns */
+[data-testid="stHorizontalBlock"] div.stButton > button {
+    padding: 0.55rem 0.9rem !important;
+    font-size: 0.88rem !important;
 }
 
 div.stButton > button[kind="primary"],
@@ -426,8 +443,17 @@ div[data-testid="stForm"] {
     background: #FFFFFF;
     border: 1px solid #E3ECE5;
     border-radius: 22px;
-    padding: 1.8rem 2rem;
+    padding: 2rem 2.2rem 2.4rem 2.2rem !important;
     box-shadow: 0 8px 28px rgba(22, 62, 47, 0.05);
+    overflow: visible !important;
+}
+
+div[data-testid="stFormSubmitButton"] {
+    margin-top: 1.4rem !important;
+    margin-bottom: 0.4rem !important;
+    padding-top: 0.2rem !important;
+    width: 100% !important;
+    clear: both !important;
 }
 
 div[data-testid="stTextInput"] input,
